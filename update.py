@@ -21,7 +21,7 @@ msg(f"Git:\n```\n{git_response}```")
 msg("Installing dependencies...")
 poetry_response = (
     subprocess.check_output(
-        ["/data/poetry/bin/poetry", "install"]
+        ["/data/pyenv/shims/poetry", "install"]
     )
     .decode()
     .strip()
