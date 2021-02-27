@@ -48,15 +48,17 @@ def deploy_to_staging(payload):
     say("Running `./manage.py migrate`...")
     say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
 
-    say("Running `./manage.py collectstatic --noinput")
+    say("Running `./manage.py collectstatic --noinput`...")
     say(f'```{subprocess.check_output([PYTHON, "manage.py", "collectstatic", "--noinput"]).decode().strip()}```')
 
     say(f"Restarting service for {location}...")
     systemctl_response = subprocess.check_output(
         ["sudo", "systemctl", "restart", location]
     )
-
-    say(f"systemctl:\n```\n{systemctl_response}```")
+    if systemctl_response.decode().strip() == '':
+        say("Restarted successfully!")
+    else:
+        say(f"systemctl:\n```\n{systemctl_response}```")
 
     # reset back to our primary directory
     os.chdir("/data/bubbles")
