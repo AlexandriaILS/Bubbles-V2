@@ -15,21 +15,24 @@ load_dotenv()
 USERNAME = os.environ.get("username", "bubbles")
 API_KEY = os.environ.get("api_key", None)
 DEFAULT_CHANNEL = os.environ.get("default_channel", "bottest")
-PAYMENT_KEY = os.environ.get("payment_key", None)
-PAYMENT_VALUE = os.environ.get("payment_value", None)
+REDDIT_USERNAME = os.environ.get("reddit_username")
+REDDIT_PASSWORD = os.environ.get("reddit_password")
 REDDIT_SECRET = os.environ.get("reddit_secret", None)
 REDDIT_CLIENT_ID = os.environ.get("reddit_client_id", None)
 REDDIT_USER_AGENT = os.environ.get("reddit_user_agent", None)
 
 ENABLE_BLOSSOM = os.environ.get("enable_blossom", False)
 
-reddit = Reddit(
-    username=os.environ.get("reddit_username"),
-    password=os.environ.get("reddit_password"),
-    client_id=os.environ.get("reddit_client_id"),
-    client_secret=os.environ.get("reddit_secret"),
-    user_agent=os.environ.get("reddit_user_agent"),
-)
+if REDDIT_USERNAME:
+    reddit = Reddit(
+        username=REDDIT_USERNAME,
+        password=REDDIT_PASSWORD,
+        client_id=REDDIT_CLIENT_ID,
+        client_secret=REDDIT_SECRET,
+        user_agent=REDDIT_USER_AGENT,
+    )
+else:
+    reddit = mock.MagicMock()
 
 app = App(
     signing_secret=os.environ.get("slack_signing_secret"),

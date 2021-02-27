@@ -6,7 +6,7 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </p>
 
-This is the modchat chatbot! Bubbles started out on the [errbot](https://github.com/errbotio/errbot) platform before migrating to a complete rewrite around the new SlackClient.
+This is the AlexandriaILS Slack chatbot! Bubbles started out on the [errbot](https://github.com/errbotio/errbot) platform before migrating to a complete rewrite around the new SlackClient.
 
 ## Development
 
