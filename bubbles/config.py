@@ -2,8 +2,6 @@ import os
 from datetime import datetime
 from unittest import mock
 
-from blossom_wrapper import BlossomAPI
-import matplotlib as mpl
 from dotenv import load_dotenv
 from praw import Reddit
 from slack_bolt import App
@@ -38,19 +36,6 @@ app = App(
     signing_secret=os.environ.get("slack_signing_secret"),
     token=os.environ.get("slack_oauth_token"),
 )
-
-if ENABLE_BLOSSOM:
-    # Feature flag means that we can lock away blossom functionality until
-    # blossom is actually ready to roll.
-    blossom = BlossomAPI(
-        email=os.getenv("blossom_email"),
-        password=os.getenv("blossom_password"),
-        api_key=os.getenv("blossom_api_key"),
-        api_base_url=os.getenv("blossom_api_url"),
-    )
-    print("blossom loaded!")
-else:
-    blossom = mock.MagicMock()
 
 ME = app.client.auth_test().data["user_id"]
 
@@ -93,7 +78,5 @@ for i in range(0, 24):
 
 # Import PluginManager from here
 PluginManager = PM(COMMAND_PREFIXES, BEGINNING_COMMAND_PREFIXES)
-
-mpl.rcParams["figure.figsize"] = [20, 10]
 
 TIME_STARTED = datetime.now()
