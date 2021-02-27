@@ -1,6 +1,5 @@
 import os
 import subprocess
-from typing import Dict
 
 from bubbles.config import PluginManager, COMMAND_PREFIXES
 
@@ -62,6 +61,8 @@ def deploy_to_staging(payload):
     # reset back to our primary directory
     os.chdir("/data/bubbles")
 
+
 PluginManager.register_plugin(
-    help, r"deploy ?(.+)", help="!deploy [alexandria, zenodotus] - deploys the code currently on github to the staging server."
+    deploy_to_staging, r"deploy ?(.+)",
+    help="!deploy [alexandria, zenodotus] - deploys the code currently on github to the staging server."
 )
