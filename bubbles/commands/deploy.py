@@ -45,8 +45,19 @@ def deploy_to_staging(payload):
 
     PYTHON = f"/data/{location}/.venv/bin/python"
 
-    say("Running `./manage.py migrate`...")
-    say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
+    if location == 'alexandria':
+        say("Running commands specific to Alexandria.\n")
+        say("Nuking DB...")
+        subprocess.check_output([PYTHON, "manage.py", "flush", "--noinput"])
+        say("Migrating models...")
+        say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
+        say("Re-adding default information...")
+        say(f'```{subprocess.check_output([PYTHON, "manage.py", "bootstrap_types"]).decode().strip()}```')
+        say("Importing data from Zenodotus. This will take a minute.")
+        say(f'```{subprocess.check_output([PYTHON, "manage.py", "import_from_z"]).decode().strip()}```')
+    else:
+        say("Running `./manage.py migrate`...")
+        say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
 
     say("Running `./manage.py collectstatic --noinput`...")
     say(f'```{subprocess.check_output([PYTHON, "manage.py", "collectstatic", "--noinput"]).decode().strip()}```')
