@@ -28,48 +28,67 @@ def deploy_to_staging(payload):
     say(f"Deploying {location} to staging. This may take a moment...")
     os.chdir(f"/data/{location}")
 
-    git_response = (
-        subprocess.check_output(["git", "pull", "origin", "master"]).decode().strip()
-    )
-    say(f"Git:\n```\n{git_response}```")
+    def saycode(command):
+        say(f'```{command.decode().strip()}```')
 
-    say("Installing dependencies...")
-    poetry_response = (
-        subprocess.check_output(
-            ["/data/pyenv/shims/poetry", "install"]
+    def migrate():
+        say("Migrating models...")
+        saycode(subprocess.check_output([PYTHON, "manage.py", "migrate"]))
+
+    def pull_from_git(branch: str="master"):
+        say("Pulling latest code...")
+        saycode(subprocess.check_output(["git", "pull", "origin", branch]))
+
+    def install_deps():
+        say("Installing dependencies...")
+        saycode(subprocess.check_output(["/data/pyenv/shims/poetry", "install"]))
+
+    def flush_db():
+        say("Nuking DB...")
+        # there's no return, so there's nothing to say
+        subprocess.check_output([PYTHON, "manage.py", "flush", "--noinput"])
+
+    def bootstrap_types():
+        say("Re-adding default information...")
+        saycode(subprocess.check_output([PYTHON, "manage.py", "bootstrap_types"]))
+
+    def import_from_z():
+        say("Importing data from Zenodotus. This will take a minute.")
+        subprocess.check_output([PYTHON, "manage.py", "import_from_z"])
+        say("Import complete.")
+
+    def collect_static():
+        say("Gathering staticfiles...")
+        saycode(subprocess.check_output([PYTHON, "manage.py", "collectstatic", "--noinput"]))
+
+    def restart_service(loc):
+        say(f"Restarting service for {loc}...")
+        systemctl_response = subprocess.check_output(
+            ["sudo", "systemctl", "restart", loc]
         )
-            .decode()
-            .strip()
-    )
-    say(f"Poetry:\n```\n{poetry_response}```")
+        if systemctl_response.decode().strip() == '':
+            say("Restarted successfully!")
+        else:
+            say("Something went wrong and could not restart.")
+            saycode(systemctl_response)
+
+    pull_from_git()
+    install_deps()
 
     PYTHON = f"/data/{location}/.venv/bin/python"
 
     if location == 'alexandria':
         say("Running commands specific to Alexandria.\n")
-        say("Nuking DB...")
-        subprocess.check_output([PYTHON, "manage.py", "flush", "--noinput"])
-        say("Migrating models...")
-        say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
-        say("Re-adding default information...")
-        say(f'```{subprocess.check_output([PYTHON, "manage.py", "bootstrap_types"]).decode().strip()}```')
-        say("Importing data from Zenodotus. This will take a minute.")
-        say(f'```{subprocess.check_output([PYTHON, "manage.py", "import_from_z"]).decode().strip()}```')
+        flush_db()
+        migrate()
+        bootstrap_types()
+        import_from_z()
     else:
-        say("Running `./manage.py migrate`...")
-        say(f'```{subprocess.check_output([PYTHON, "manage.py", "migrate"]).decode().strip()}```')
+        migrate()
 
-    say("Running `./manage.py collectstatic --noinput`...")
-    say(f'```{subprocess.check_output([PYTHON, "manage.py", "collectstatic", "--noinput"]).decode().strip()}```')
+    collect_static()
 
-    say(f"Restarting service for {location}...")
-    systemctl_response = subprocess.check_output(
-        ["sudo", "systemctl", "restart", location]
-    )
-    if systemctl_response.decode().strip() == '':
-        say("Restarted successfully!")
-    else:
-        say(f"systemctl:\n```\n{systemctl_response}```")
+    restart_service(location)
 
     # reset back to our primary directory
     os.chdir("/data/bubbles")
